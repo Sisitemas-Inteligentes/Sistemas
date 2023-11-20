@@ -1,6 +1,6 @@
-from tkinter import Tk, Toplevel, StringVar, Entry, Button, Label
-from tkinter import END
+from tkinter import Toplevel, Button, Label
 from registro_login import RegistroLogin
+
 
 class VentanaLogin:
     def __init__(self, ventana):
@@ -19,7 +19,7 @@ class VentanaLogin:
     def mostrar_pagina_principal(self, usuario):
         self.pagina_principal = Toplevel(self.ventana)
         self.pagina_principal.title("Página Principal")
-        self.pagina_principal.geometry("300x250")
+        self.pagina_principal.geometry("500x450")
         self.centrar_ventana(300, 250)
         Label(self.pagina_principal, text=f"Bienvenido, {usuario}!", font=("Calibri", 14)).pack()
         Button(self.pagina_principal, text="Cerrar Sesión", command=self.cerrar_sesion).pack()

@@ -5,8 +5,11 @@ from tkinter import StringVar, Entry, Button, Label, Toplevel
 from tkinter import END
 from mtcnn.mtcnn import MTCNN
 
+
 class RegistroLogin:
     def __init__(self, ventana, app):
+        self.pantalla1 = None
+        self.pantalla2 = None
         self.ventana = ventana
         self.app = app
         self.usuario = StringVar()
@@ -28,7 +31,7 @@ class RegistroLogin:
     def mostrar_ventana_registro(self):
         self.pantalla1 = Toplevel(self.ventana)
         self.pantalla1.title("Registro")
-        self.pantalla1.geometry("300x250")
+        self.pantalla1.geometry("500x350")
 
         Label(self.pantalla1, text="Registro facial: debe asignar un usuario:").pack()
         Label(self.pantalla1, text="Registro tradicional: debe asignar usuario y contraseña:").pack()
@@ -62,7 +65,8 @@ class RegistroLogin:
         self.contra_entrada2 = Entry(self.pantalla2, textvariable=self.verificacion_contra, show='*')
         self.contra_entrada2.pack()
         Label(self.pantalla2, text="").pack()
-        Button(self.pantalla2, text="Inicio de Sesion Tradicional", width=20, height=1, command=self.verificacion_login).pack()
+        Button(self.pantalla2, text="Inicio de Sesion Tradicional", width=20, height=1,
+               command=self.verificacion_login).pack()
 
         Label(self.pantalla2, text="").pack()
         Button(self.pantalla2, text="Inicio de Sesion Facial", width=20, height=1, command=self.login_facial).pack()
@@ -70,15 +74,30 @@ class RegistroLogin:
     def registrar_usuario(self):
         usuario_info = self.usuario.get()
         contra_info = self.contra.get()
-        archivo = open(usuario_info, "w")
-        archivo.write(usuario_info + "\n")
-        archivo.write(contra_info)
-        archivo.close()
+
+        # Verifica si el directorio "db" existe, si no lo crea
+        db_dir = "db"
+        if not os.path.exists(db_dir):
+            os.makedirs(db_dir)
+
+        archivo_path = os.path.join(db_dir, usuario_info)
+        with open(archivo_path, "w") as archivo:
+            archivo.write(usuario_info + "\n")
+            archivo.write(contra_info)
+
         self.usuario_entrada.delete(0, END)
         self.contra_entrada.delete(0, END)
         Label(self.pantalla1, text="Registro Convencional Exitoso", fg="green", font=("Calibri", 11)).pack()
 
     def registro_facial(self):
+        usuario_info = self.usuario.get()
+
+        # Verifica si el directorio db existe, si no lo crea
+        db_dir = "db"
+        if not os.path.exists(db_dir):
+            os.makedirs(db_dir)
+
+        img_path = os.path.join(db_dir, usuario_info + ".jpg")
         cap = cv2.VideoCapture(0)
         while True:
             ret, frame = cap.read()
@@ -86,8 +105,7 @@ class RegistroLogin:
             if cv2.waitKey(1) == 27:
                 break
 
-        usuario_img = self.usuario.get()
-        cv2.imwrite(usuario_img + ".jpg", frame)
+        cv2.imwrite(img_path, frame)
         cap.release()
         cv2.destroyAllWindows()
 
@@ -95,8 +113,8 @@ class RegistroLogin:
         self.contra_entrada.delete(0, END)
         Label(self.pantalla1, text="Registro Facial Exitoso", fg="green", font=("Calibri", 11)).pack()
 
-        def reg_rostro(img, lista_resultados):
-            data = pyplot.imread(img)
+        def reg_rostro(imgagen, lista_resultados):
+            data = pyplot.imread(imgagen)
             for i in range(len(lista_resultados)):
                 x1, y1, ancho, alto = lista_resultados[i]['box']
                 x2, y2 = x1 + ancho, y1 + alto
@@ -104,11 +122,11 @@ class RegistroLogin:
                 pyplot.axis('off')
                 cara_reg = data[y1:y2, x1:x2]
                 cara_reg = cv2.resize(cara_reg, (150, 200), interpolation=cv2.INTER_CUBIC)
-                cv2.imwrite(usuario_img + ".jpg", cara_reg)
+                cv2.imwrite(os.path.join(db_dir, usuario_info + "_cara.jpg"), cara_reg)
                 pyplot.imshow(data[y1:y2, x1:x2])
             pyplot.show()
 
-        img = usuario_img + ".jpg"
+        img = img_path
         pixeles = pyplot.imread(img)
         detector = MTCNN()
         caras = detector.detect_faces(pixeles)
@@ -119,17 +137,23 @@ class RegistroLogin:
         log_contra = self.verificacion_contra.get()
         self.usuario_entrada2.delete(0, END)
         self.contra_entrada2.delete(0, END)
-        lista_archivos = os.listdir()
-        if log_usuario in lista_archivos:
-            archivo2 = open(log_usuario, "r")
-            verificacion = archivo2.read().splitlines()
-            if log_contra in verificacion:
-                print("Inicio de sesion exitoso")
-                self.app.cerrar_ventana(self.pantalla2)
-                self.app.mostrar_pagina_principal(log_usuario)
-            else:
-                print("Contraseña incorrecta, ingrese de nuevo")
-                Label(self.pantalla2, text="Contraseña Incorrecta", fg="red", font=("Calibri", 11)).pack()
+
+        db_dir = "db"
+        if not os.path.exists(db_dir):
+            print("Error: El directorio db no existe")
+            return
+
+        archivo_path = os.path.join(db_dir, log_usuario)
+        if os.path.exists(archivo_path):
+            with open(archivo_path, "r") as archivo:
+                verificacion = archivo.read().splitlines()
+                if log_contra == verificacion[1]:
+                    print("Inicio de sesión exitoso")
+                    self.app.cerrar_ventana(self.pantalla2)
+                    self.app.mostrar_pagina_principal(log_usuario)
+                else:
+                    print("Contraseña incorrecta, ingrese de nuevo")
+                    Label(self.pantalla2, text="Contraseña Incorrecta", fg="red", font=("Calibri", 11)).pack()
         else:
             print("Usuario no encontrado")
             Label(self.pantalla2, text="Usuario no encontrado", fg="red", font=("Calibri", 11)).pack()
@@ -188,3 +212,5 @@ class RegistroLogin:
 
         # Mostrar la ventana con las caras detectadas
         pyplot.show()
+
+
