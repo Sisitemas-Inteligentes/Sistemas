@@ -40,7 +40,7 @@ class RegistroLogin:
         self.pantalla1.geometry("500x350")
         self.centrar_ventana(500, 300)
 
-        Label(self.pantalla1, text="Registro facial: debe asignar un usuario:").pack()
+        Label(self.pantalla1, text="Registro Iteligente: debe asignar un usuario:").pack()
         Label(self.pantalla1, text="Registro tradicional: debe asignar usuario y contraseña:").pack()
         Label(self.pantalla1, text="").pack()
         Label(self.pantalla1, text="Usuario * ").pack()
@@ -53,7 +53,7 @@ class RegistroLogin:
         Button(self.pantalla1, text="Registro Tradicional", width=15, height=1, command=self.registrar_usuario).pack()
 
         Label(self.pantalla1, text="").pack()
-        Button(self.pantalla1, text="Registro Facial", width=15, height=1, command=self.registro_facial).pack()
+        Button(self.pantalla1, text="Registro Inteligente", width=15, height=1, command=self.registro_facial).pack()
 
     def mostrar_ventana_login(self):
         self.pantalla2 = Toplevel(self.ventana)
@@ -61,7 +61,7 @@ class RegistroLogin:
         self.pantalla2.geometry("300x250")
         self.centrar_ventana(300, 250)
 
-        Label(self.pantalla2, text="Login facial: debe asignar un usuario:").pack()
+        Label(self.pantalla2, text="Login Inteligente: debe asignar un usuario:").pack()
         Label(self.pantalla2, text="Login tradicional: debe asignar usuario y contraseña:").pack()
         Label(self.pantalla2, text="").pack()
 
@@ -76,7 +76,7 @@ class RegistroLogin:
                command=self.verificacion_login).pack()
 
         Label(self.pantalla2, text="").pack()
-        Button(self.pantalla2, text="Inicio de Sesion Facial", width=20, height=1, command=self.login_facial).pack()
+        Button(self.pantalla2, text="Inicio de Sesion Inteligente", width=20, height=1, command=self.login_facial).pack()
 
     def registrar_usuario(self):
         usuario_info = self.usuario.get()
@@ -121,7 +121,7 @@ class RegistroLogin:
         cap = cv2.VideoCapture(0)
         while True:
             ret, frame = cap.read()
-            cv2.imshow('Registro Facial', frame)
+            cv2.imshow('Registro Inteligente', frame)
             if cv2.waitKey(1) == 27:
                 break
 
@@ -132,7 +132,7 @@ class RegistroLogin:
         self.usuario_entrada.delete(0, END)
         self.contra_entrada.delete(0, END)
         self.guardar_primer_audio(usuario_info)
-        Label(self.pantalla1, text="Registro Facial Exitoso", fg="green", font=("Calibri", 11)).pack()
+        Label(self.pantalla1, text="Registro Inteligente Exitoso", fg="green", font=("Calibri", 11)).pack()
 
         def reg_rostro(imgagen, lista_resultados):
             data = pyplot.imread(imgagen)
@@ -263,7 +263,7 @@ class RegistroLogin:
             ret, frame = cap.read()
 
             # Mostrar el frame en una ventana
-            cv2.imshow('Login Facial', frame)
+            cv2.imshow('Login Inteligente', frame)
 
             # Esperar a que se presione la tecla 'Esc' para salir
             if cv2.waitKey(1) == 27:
@@ -288,6 +288,7 @@ class RegistroLogin:
         # Comparar el audio capturado con el segundo archivo de audio seleccionado
         if audio_path2:
             # Obtener el primer archivo de audio capturado
+          
             nombre_usuario = self.usuario.get()
             
             primer_audio_path = os.path.join(db_dir, f"{nombre_usuario}.wav")
@@ -304,7 +305,7 @@ class RegistroLogin:
                     font=("Calibri", 11)).pack()
 
         # Mostrar un mensaje de éxito
-        Label(self.pantalla2, text="Inicio de Sesión Facial Exitoso", fg="green", font=("Calibri", 11)).pack()
+        Label(self.pantalla2, text="Inicio de Sesión Inteligente Exitoso", fg="green", font=("Calibri", 11)).pack()
 
         # Procesar la imagen para mostrar las caras detectadas
         pixeles = pyplot.imread(img_path_db)
@@ -332,32 +333,3 @@ class RegistroLogin:
 
         # Mostrar la página principal
         self.app.mostrar_pagina_principal(self.usuario.get())
-
-    def login(self):
-        usuario_info = self.usuario.get()
-        db_dir = "db"
-
-        # Verifica si el directorio "db" existe, si no lo crea
-        if not os.path.exists(db_dir):
-            os.makedirs(db_dir)
-
-        img_path_facial = os.path.join(db_dir, usuario_info + "_facial.jpg")
-        img_path_retina = os.path.join(db_dir, usuario_info + "_retina.jpg")
-
-        # Verificar la similitud usando DeepFace
-        try:
-            result = DeepFace.verify(img_path_facial, img_path_retina, model_name="VGG-Face",
-                                     distance_metric='euclidean_l2', enforce_detection=False)
-
-            if result["verified"]:
-                print("Inicio de Sesión con Retina Exitoso")
-                self.app.cerrar_ventana(self.ventana)
-                self.app.mostrar_pagina_principal(usuario_info)
-            else:
-                print("Inicio de Sesión con Retina Fallido")
-                Label(self.ventana, text="Inicio de Sesión con Retina Fallido", fg="red", font=("Calibri", 11)).pack()
-
-        except ValueError as e:
-            print(f"Error: {e}")
-            Label(self.ventana, text="Error: No se pudo detectar una cara en la imagen.", fg="red",
-                  font=("Calibri", 11)).pack()
