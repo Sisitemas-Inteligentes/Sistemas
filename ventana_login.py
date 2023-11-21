@@ -16,13 +16,16 @@ class VentanaLogin:
         y = (alto_pantalla / 2) - (alto / 2)
         self.ventana.geometry(f'{ancho}x{alto}+{int(x)}+{int(y)}')
 
-    def mostrar_pagina_principal(self, usuario):
-        self.pagina_principal = Toplevel(self.ventana)
-        self.pagina_principal.title("Página Principal")
-        self.pagina_principal.geometry("500x450")
-        self.centrar_ventana(300, 250)
-        Label(self.pagina_principal, text=f"Bienvenido, {usuario}!", font=("Calibri", 14)).pack()
-        Button(self.pagina_principal, text="Cerrar Sesión", command=self.cerrar_sesion).pack()
+    def mostrar_pagina_principal(self, nombre_usuario):
+        if self.pagina_principal is None:
+            self.pagina_principal = Toplevel(self.ventana)
+            self.pagina_principal.title("Página Principal")
+            self.pagina_principal.geometry("500x450")
+            self.centrar_ventana(500, 450)
+            Label(self.pagina_principal, text=f"Bienvenido!", font=("Calibri", 14)).pack()
+            Button(self.pagina_principal, text="Cerrar Sesión", command=self.cerrar_sesion).pack()
+
+            # Cerrar la ventana secundaria (pantalla2) si existe
 
     def cerrar_ventana(self, ventana):
         ventana.destroy()
@@ -49,3 +52,7 @@ class VentanaLogin:
     def login(self):
         self.pantalla2 = RegistroLogin(self.ventana, self)
         self.pantalla2.mostrar_ventana_login()
+
+    def login_retina(self):
+        self.pantalla2 = RegistroLogin(self.ventana, self)
+        self.pantalla2.login_retina()

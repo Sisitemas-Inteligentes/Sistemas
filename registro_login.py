@@ -4,7 +4,7 @@ from matplotlib import pyplot
 from tkinter import StringVar, Entry, Button, Label, Toplevel
 from tkinter import END
 from mtcnn.mtcnn import MTCNN
-
+from deepface import DeepFace
 
 class RegistroLogin:
     def __init__(self, ventana, app):
@@ -32,6 +32,7 @@ class RegistroLogin:
         self.pantalla1 = Toplevel(self.ventana)
         self.pantalla1.title("Registro")
         self.pantalla1.geometry("500x350")
+        self.centrar_ventana(500, 300)
 
         Label(self.pantalla1, text="Registro facial: debe asignar un usuario:").pack()
         Label(self.pantalla1, text="Registro tradicional: debe asignar usuario y contraseña:").pack()
@@ -158,12 +159,48 @@ class RegistroLogin:
             print("Usuario no encontrado")
             Label(self.pantalla2, text="Usuario no encontrado", fg="red", font=("Calibri", 11)).pack()
 
+    def login_retina(self):
+        usuario_info = self.usuario.get()
+
+        # Verifica si el directorio "db" existe, si no lo crea
+        db_dir = "db"
+        if not os.path.exists(db_dir):
+            os.makedirs(db_dir)
+
+        img_path_retina = os.path.join(db_dir, usuario_info + "_retina.jpg")
+        cap = cv2.VideoCapture(0)
+        while True:
+            ret, frame = cap.read()
+            cv2.imshow('Registro de Retina', frame)
+            if cv2.waitKey(1) == 27:
+                break
+
+        cv2.imwrite(img_path_retina, frame)
+        cap.release()
+        cv2.destroyAllWindows()
+
+        # Verificar la similitud usando DeepFace
+        img_path_facial = os.path.join(db_dir, usuario_info + "_facial.jpg")
+        result = DeepFace.verify(img_path_facial, img_path_retina, model_name="VGG-Face",
+                                 distance_metric='euclidean_l2')
+
+        if result["verified"]:
+            print("Inicio de Sesión con Retina Exitoso")
+            self.app.cerrar_ventana(self.pantalla2)
+            self.app.mostrar_pagina_principal(usuario_info)
+        else:
+            print("Inicio de Sesión con Retina Fallido")
+            Label(self.pantalla2, text="Inicio de Sesión con Retina Fallido", fg="red", font=("Calibri", 11)).pack()
+
     def login_facial(self):
         # Iniciar la captura de video desde la cámara
         cap = cv2.VideoCapture(0)
 
         # Inicializar el detector facial (puedes ajustar los parámetros según sea necesario)
         detector = MTCNN()
+
+        nombre_usuario = self.usuario.get()
+        db_dir = "db"
 
         while True:
             # Leer un frame desde la cámara
@@ -177,8 +214,8 @@ class RegistroLogin:
                 break
 
         # Guardar la imagen capturada con el nombre del usuario
-        usuario_img = self.usuario.get()
-        cv2.imwrite(usuario_img + ".jpg", frame)
+        img_path_db = os.path.join(db_dir, nombre_usuario + "_facial.jpg")
+        cv2.imwrite(img_path_db, frame)
 
         # Liberar los recursos de la cámara y cerrar la ventana
         cap.release()
@@ -192,10 +229,9 @@ class RegistroLogin:
         Label(self.pantalla2, text="Inicio de Sesión Facial Exitoso", fg="green", font=("Calibri", 11)).pack()
 
         # Procesar la imagen para mostrar las caras detectadas
-        img = usuario_img + ".jpg"
-        pixeles = pyplot.imread(img)
+        pixeles = pyplot.imread(img_path_db)
         caras = detector.detect_faces(pixeles)
-        self.mostrar_caras_detectadas(img, caras)
+        self.mostrar_caras_detectadas(img_path_db, caras)
 
     def mostrar_caras_detectadas(self, img, lista_resultados):
         # Cargar la imagen y mostrar las caras detectadas
@@ -208,9 +244,42 @@ class RegistroLogin:
             # Mostrar la cara en una ventana
             pyplot.subplot(1, len(lista_resultados), i + 1)
             pyplot.axis('off')
-            pyplot.imshow(data[y1:y2, x1:x2])
+            #pyplot.imshow(data[y1:y2, x1:x2])
 
         # Mostrar la ventana con las caras detectadas
-        pyplot.show()
+        #pyplot.show()
 
+        # Cerrar la ventana de inicio de sesión
+        self.app.cerrar_ventana(self.pantalla2)
 
+        # Mostrar la página principal
+        self.app.mostrar_pagina_principal(self.usuario.get())
+
+    def login(self):
+        usuario_info = self.usuario.get()
+        db_dir = "db"
+
+        # Verifica si el directorio "db" existe, si no lo crea
+        if not os.path.exists(db_dir):
+            os.makedirs(db_dir)
+
+        img_path_facial = os.path.join(db_dir, usuario_info + "_facial.jpg")
+        img_path_retina = os.path.join(db_dir, usuario_info + "_retina.jpg")
+
+        # Verificar la similitud usando DeepFace
+        try:
+            result = DeepFace.verify(img_path_facial, img_path_retina, model_name="VGG-Face",
+                                     distance_metric='euclidean_l2', enforce_detection=False)
+
+            if result["verified"]:
+                print("Inicio de Sesión con Retina Exitoso")
+                self.app.cerrar_ventana(self.ventana)
+                self.app.mostrar_pagina_principal(usuario_info)
+            else:
+                print("Inicio de Sesión con Retina Fallido")
+                Label(self.ventana, text="Inicio de Sesión con Retina Fallido", fg="red", font=("Calibri", 11)).pack()
+
+        except ValueError as e:
+            print(f"Error: {e}")
+            Label(self.ventana, text="Error: No se pudo detectar una cara en la imagen.", fg="red",
+                  font=("Calibri", 11)).pack()
