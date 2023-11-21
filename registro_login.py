@@ -7,6 +7,7 @@ from tkinter import END
 from mtcnn.mtcnn import MTCNN
 from deepface import DeepFace
 
+from audio import comparar_audiosNuevos
 from comparacion_audio import comparar_audios
 
 
@@ -288,18 +289,36 @@ class RegistroLogin:
         # Comparar el audio capturado con el segundo archivo de audio seleccionado
         if audio_path2:
             # Obtener el primer archivo de audio capturado
-          
+
             nombre_usuario = self.usuario.get()
             
-            primer_audio_path = os.path.join(db_dir, f"{nombre_usuario}.wav")
-            
+            primer_audio_path = os.path.join(db_dir, f"martina.wav")
+            print(nombre_usuario)
 
             # Comparar los archivos de audio
             comparar_audios(primer_audio_path, audio_path2)
 
             # Mostrar un mensaje de éxito
-            Label(self.pantalla2, text="Comparación de Audio Exitosa", fg="green", font=("Calibri", 11)).pack()
+            if comparar_audios(primer_audio_path, audio_path2):
+                # Mostrar un mensaje de éxito
+                Label(self.pantalla2, text="Comparación de Audio Exitosa", fg="green", font=("Calibri", 11)).pack()
+                # Verificar si la similitud es mayor al umbral y mostrar la página principal
+                if comparar_audiosNuevos(primer_audio_path, audio_path2) > 0.8:
+                    # Mostrar un mensaje de éxito
+                    Label(self.pantalla2, text="Comparación de Audio Exitosa", fg="green", font=("Calibri", 11)).pack()
+                    # Iniciar sesión solo si la similitud es mayor al umbral
+                    self.app.mostrar_pagina_principal(self.usuario.get())
+                else:
+                    # Mostrar un mensaje de error y salir del método
+                    Label(self.pantalla2, text="Error: La comparación de audio falló", fg="red",
+                          font=("Calibri", 11)).pack()
+                    return
 
+            else:
+                # Mostrar un mensaje de error y salir del método
+                Label(self.pantalla2, text="Error: La comparación de audio falló", fg="red",
+                      font=("Calibri", 11)).pack()
+                return
         else:
             Label(self.pantalla2, text="Error: No se seleccionó el segundo archivo de audio", fg="red",
                     font=("Calibri", 11)).pack()

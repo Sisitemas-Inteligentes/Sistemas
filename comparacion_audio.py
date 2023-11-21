@@ -1,42 +1,26 @@
 import librosa
 import numpy as np
 
-
-def extraer_caracteristicas_audio(wav_path):
-    try:
-        # Cargar el archivo de audio con librosa
-        y, sr = librosa.load(wav_path)
-
-        # Extraer características del audio
-        caracteristicas_audio = librosa.feature.mfcc(y=y, sr=sr)
-
-        return caracteristicas_audio
-
-    except FileNotFoundError:
-        print(f"Error: No se pudo abrir el archivo de audio '{wav_path}'")
-        return None
-
-
 def comparar_audios(audio1_path, audio2_path):
-    # Extraer características de los audios
+    # Cargar los archivos de audio usando librosa
+    audio1, _ = librosa.load(audio1_path, sr=None)
+    audio2, _ = librosa.load(audio2_path, sr=None)
 
-    caracteristicas_audio1 = extraer_caracteristicas_audio(audio1_path)
-    caracteristicas_audio2 = extraer_caracteristicas_audio(audio2_path)
+    # Calcular las características MFCC de cada audio
+    mfccs1 = librosa.feature.mfcc(audio1, sr=None)
+    mfccs2 = librosa.feature.mfcc(audio2, sr=None)
 
-    # Verificar si se pudieron extraer las características
-    if caracteristicas_audio1 is not None and caracteristicas_audio2 is not None:
-        # Obtener la longitud mínima de las características
-        min_length = min(caracteristicas_audio1.shape[1], caracteristicas_audio2.shape[1])
+    # Asegurarse de que ambos conjuntos de características tengan la misma longitud
+    min_length = min(mfccs1.shape[1], mfccs2.shape[1])
+    mfccs1 = mfccs1[:, :min_length]
+    mfccs2 = mfccs2[:, :min_length]
 
-        # Truncar las características al mínimo común
-        caracteristicas_audio1 = caracteristicas_audio1[:, :min_length]
-        caracteristicas_audio2 = caracteristicas_audio2[:, :min_length]
+    # Calcular la similitud mediante la distancia euclidiana
+    euclidean_distance = np.linalg.norm(mfccs1 - mfccs2)
 
-        # Calcular la distancia euclidiana entre las características de audio
-        distancia_euclidiana = np.linalg.norm(caracteristicas_audio1 - caracteristicas_audio2)
+    # Normalizar la distancia euclidiana al rango [0, 1]
+    max_distance = np.max([np.linalg.norm(mfccs1), np.linalg.norm(mfccs2)])
+    normalized_similarity = 1 - euclidean_distance / max_distance
 
-        # Imprimir la distancia euclidiana (puedes ajustar esto según tus necesidades)
-        print(f"Distancia Euclidiana entre los archivos de audio: {distancia_euclidiana}")
-
-    else:
-        print("Error: No se pudieron extraer características de uno o ambos archivos de audio.")
+    print(f"La similitud es: {normalized_similarity}")
+    return normalized_similarity
