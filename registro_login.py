@@ -6,6 +6,7 @@ from tkinter import StringVar, Entry, Button, Label, Toplevel, filedialog
 from tkinter import END
 from mtcnn.mtcnn import MTCNN
 from deepface import DeepFace
+from tkinter.simpledialog import askstring
 
 from audio import comparar_audiosNuevos
 
@@ -286,17 +287,31 @@ class RegistroLogin:
         audio_path2 = filedialog.askopenfilename(title="Seleccione el segundo archivo de audio",
                                                     filetypes=[("Archivos WAV", "*.wav")])
 
+        nombre_usuario = askstring("Nombre de Usuario", "Ingrese su nombre de usuario:")
+
+        # Check if the user canceled the input dialog
+        if nombre_usuario is None:
+            # Inform the user that the input was canceled
+            Label(self.pantalla2, text="Error: No se ingresó un nombre de usuario", fg="red",
+                  font=("Calibri", 11)).pack()
+            return  # Exit the method if the input was canceled
+
+        # Debugging: Print the entered user name
+        print("Nombre de Usuario:", nombre_usuario)
         # Comparar el audio capturado con el segundo archivo de audio seleccionado
         if audio_path2:
             # Obtener el primer archivo de audio capturado
 
-            nombre_usuario = self.usuario.get()
-            
-            primer_audio_path = os.path.join(db_dir, f"cuco.wav")
-            print(nombre_usuario)
+            primer_audio_path = os.path.join(db_dir, f"{nombre_usuario}.wav")
+
+            # Copy the selected audio file to the destination path
+            shutil.copy(audio_path2, primer_audio_path)
 
             # Comparar los archivos de audio
-            #comparar_audiosNuevos(primer_audio_path, audio_path2)
+            # comparar_audiosNuevos(primer_audio_path, audio_path2)
+
+            # Mostrar un mensaje de éxito
+            Label(self.pantalla2, text="Comparación de Audio Exitosa", fg="green", font=("Calibri", 11)).pack()
 
             # Mostrar un mensaje de éxito
             if comparar_audiosNuevos(primer_audio_path, audio_path2):
