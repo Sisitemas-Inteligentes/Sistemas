@@ -1,4 +1,6 @@
-from tkinter import Toplevel, Button, Label
+from tkinter import Toplevel, Button, Label, filedialog
+
+from comparacion_audio import comparar_audios
 from registro_login import RegistroLogin
 
 
@@ -34,6 +36,15 @@ class VentanaLogin:
         if self.pagina_principal:
             self.pagina_principal.destroy()
             self.pagina_principal = None
+
+    def comparar_audio(self):
+        audio_path1 = filedialog.askopenfilename(title="Seleccione el primer archivo de audio",
+                                                 filetypes=[("Archivos WAV", "*.wav")])
+        audio_path2 = filedialog.askopenfilename(title="Seleccione el segundo archivo de audio",
+                                                 filetypes=[("Archivos WAV", "*.wav")])
+
+        if audio_path1 and audio_path2:
+            comparar_audios(audio_path1, audio_path2)
 
     def pantalla_principal(self):
         self.ventana.geometry("600x650")
