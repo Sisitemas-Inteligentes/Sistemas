@@ -18,5 +18,6 @@ def comparar_audiosNuevos(voz1, voz2):
         print("La similitud entre las dos voces es: ", similarity)
     else:
         print("NO valid similarity, la similitud es de: ", similarity)
+    return similarity
 
 

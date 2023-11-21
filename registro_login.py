@@ -8,7 +8,7 @@ from mtcnn.mtcnn import MTCNN
 from deepface import DeepFace
 
 from audio import comparar_audiosNuevos
-from comparacion_audio import comparar_audios
+
 
 
 class RegistroLogin:
@@ -292,14 +292,14 @@ class RegistroLogin:
 
             nombre_usuario = self.usuario.get()
             
-            primer_audio_path = os.path.join(db_dir, f"martina.wav")
+            primer_audio_path = os.path.join(db_dir, f"cuco.wav")
             print(nombre_usuario)
 
             # Comparar los archivos de audio
-            comparar_audios(primer_audio_path, audio_path2)
+            #comparar_audiosNuevos(primer_audio_path, audio_path2)
 
             # Mostrar un mensaje de éxito
-            if comparar_audios(primer_audio_path, audio_path2):
+            if comparar_audiosNuevos(primer_audio_path, audio_path2):
                 # Mostrar un mensaje de éxito
                 Label(self.pantalla2, text="Comparación de Audio Exitosa", fg="green", font=("Calibri", 11)).pack()
                 # Verificar si la similitud es mayor al umbral y mostrar la página principal
