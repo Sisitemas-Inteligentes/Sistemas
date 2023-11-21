@@ -11,7 +11,9 @@ from comparacion_audio import comparar_audios
 
 
 class RegistroLogin:
+    
     def __init__(self, ventana, app):
+        
         self.pantalla1 = None
         self.pantalla2 = None
         self.ventana = ventana
@@ -281,12 +283,15 @@ class RegistroLogin:
 
         # Pedir al usuario que seleccione el segundo archivo de audio
         audio_path2 = filedialog.askopenfilename(title="Seleccione el segundo archivo de audio",
-                                                 filetypes=[("Archivos WAV", "*.wav")])
+                                                    filetypes=[("Archivos WAV", "*.wav")])
 
         # Comparar el audio capturado con el segundo archivo de audio seleccionado
         if audio_path2:
             # Obtener el primer archivo de audio capturado
-            primer_audio_path = os.path.join(db_dir, f"martina.wav")
+            nombre_usuario = self.usuario.get()
+            
+            primer_audio_path = os.path.join(db_dir, f"{nombre_usuario}.wav")
+            
 
             # Comparar los archivos de audio
             comparar_audios(primer_audio_path, audio_path2)
@@ -296,7 +301,7 @@ class RegistroLogin:
 
         else:
             Label(self.pantalla2, text="Error: No se seleccionó el segundo archivo de audio", fg="red",
-                  font=("Calibri", 11)).pack()
+                    font=("Calibri", 11)).pack()
 
         # Mostrar un mensaje de éxito
         Label(self.pantalla2, text="Inicio de Sesión Facial Exitoso", fg="green", font=("Calibri", 11)).pack()
