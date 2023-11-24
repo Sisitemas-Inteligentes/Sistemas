@@ -1,6 +1,7 @@
 import librosa
 import numpy as np
 
+
 def comparar_audios(audio1_path, audio2_path):
     # Cargar los archivos de audio usando librosa
     audio1, _ = librosa.load(audio1_path, sr=None)
